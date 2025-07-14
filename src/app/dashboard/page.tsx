@@ -37,7 +37,6 @@ type PerformanceDataItem = {
 const DashboardPage: FC = () => {
   const router = useRouter();
   const username = useQuizStore((state) => state.username);
-  const role = useQuizStore((state) => state.role);
 
   const stats: StatItem[] = [
     { title: 'Quizzes Created', value: '4', icon: '📝' },

@@ -26,7 +26,7 @@ export default function EvaluationQuestions() {
         console.log("Questions Updated:", questions);
     }, [questions]);
 
-    function updateSpecificField(id: number, property: keyof Question, newValue: any) {
+    function updateSpecificField(id: number, property: keyof Question, newValue: string | number | [string, string, string, string]) {
         setQuestions((prevQuestions) =>
             prevQuestions.map((question) =>
                 question.id === id ? { ...question, [property]: newValue } : question

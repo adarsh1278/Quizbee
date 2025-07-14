@@ -33,6 +33,12 @@ export interface QuizGenerationRequest {
   timePerQuestion?: number;
 }
 
+interface ApiQuestionResponse {
+  text: string;
+  options: [string, string, string, string];
+  correctAnswer: number;
+}
+
 export async function generateQuizQuestions(
   request: QuizGenerationRequest
 ): Promise<GeneratedQuestion[]> {
@@ -77,10 +83,10 @@ Return only the JSON array, no additional text.`;
       throw new Error('Failed to parse AI response');
     }
     
-    const questionsData = JSON.parse(jsonMatch[0]);
+    const questionsData: ApiQuestionResponse[] = JSON.parse(jsonMatch[0]);
     
     // Transform to our format
-    const questions: GeneratedQuestion[] = questionsData.map((q: any, index: number) => ({
+    const questions: GeneratedQuestion[] = questionsData.map((q: ApiQuestionResponse, index: number) => ({
       id: index + 1,
       type: 'mcq' as const,
       text: q.text,

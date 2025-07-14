@@ -164,7 +164,7 @@ export default function AIQuizGenerator({ onQuestionsGenerated }: AIQuizGenerato
                                 </>
                             ) : (
                                 <p className="text-xs text-gray-600 p-2 bg-yellow-50 rounded border">
-                                    Set NEXT_PUBLIC_GEMINI_API_KEY in your .env.local file or click "Generate Questions" to enter manually.
+                                    Set NEXT_PUBLIC_GEMINI_API_KEY in your .env.local file or click &quot;Generate Questions&quot; to enter manually.
                                 </p>
                             )}
                         </div>
