@@ -1,5 +1,18 @@
 import { create } from 'zustand';
 
+interface Player {
+  id: string;
+  name: string;
+  score: number;
+}
+
+interface Question {
+  id: string;
+  text: string;
+  options: string[];
+  correctAnswer: number;
+}
+
 interface QuizState {
   username: string;
   email: string;
@@ -7,8 +20,8 @@ interface QuizState {
   roomCode: string;
   isHost: boolean;
   score: number;
-  players: any[];
-  currentQuestion: any;
+  players: Player[];
+  currentQuestion: Question | null;
   quizStarted: boolean;
   role: 'student' | 'examiner' | null;
 
@@ -19,9 +32,9 @@ interface QuizState {
   setRoomCode: (code: string) => void;
   setIsHost: (host: boolean) => void;
   incrementScore: () => void;
-  setPlayers: (players: any[]) => void;
-  addPlayer: (player: any) => void;
-  setCurrentQuestion: (question: any) => void;
+  setPlayers: (players: Player[]) => void;
+  addPlayer: (player: Player) => void;
+  setCurrentQuestion: (question: Question | null) => void;
   setQuizStarted: (started: boolean) => void;
   resetQuiz: () => void;
 }
