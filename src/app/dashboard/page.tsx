@@ -1,9 +1,9 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useQuizStore } from '@/app/store/useQuizStore';
-import { Button } from '@/app/component/ui/button';
-import { Card, CardContent } from '@/app/component/ui/card';
+import { useQuizStore } from '@/store/useQuizStore';
+import { Button } from '@/component/ui/button';
+import { Card, CardContent } from '@/component/ui/card';
 import {
   ResponsiveContainer,
   BarChart,
@@ -13,26 +13,46 @@ import {
   Tooltip,
   CartesianGrid,
 } from 'recharts';
+import { FC } from 'react';
 
-export default function DashboardPage() {
+type StatItem = {
+  title: string;
+  value: string;
+  icon: string;
+};
+
+type QuizItem = {
+  id: string;
+  name: string;
+  participants: number;
+  date: string;
+  status: 'Active' | 'Completed';
+};
+
+type PerformanceDataItem = {
+  name: string;
+  avgScore: number;
+};
+
+const DashboardPage: FC = () => {
   const router = useRouter();
   const username = useQuizStore((state) => state.username);
   const role = useQuizStore((state) => state.role);
 
-  const stats = [
+  const stats: StatItem[] = [
     { title: 'Quizzes Created', value: '4', icon: '📝' },
     { title: 'Participants', value: '120+', icon: '👥' },
     { title: 'Avg. Score', value: '78%', icon: '🎯' },
     { title: 'This Month', value: '12', icon: '📈' }
   ];
 
-  const recentQuizzes = [
+  const recentQuizzes: QuizItem[] = [
     { id: 'quiz-1', name: 'JavaScript Basics', participants: 45, date: '2d ago', status: 'Active' },
     { id: 'quiz-2', name: 'React Concepts', participants: 32, date: '7d ago', status: 'Completed' },
     { id: 'quiz-3', name: 'CSS Grid Test', participants: 28, date: '14d ago', status: 'Completed' }
   ];
 
-  const performanceData = [
+  const performanceData: PerformanceDataItem[] = [
     { name: 'JS', avgScore: 72 },
     { name: 'React', avgScore: 81 },
     { name: 'CSS', avgScore: 64 },
@@ -87,18 +107,25 @@ export default function DashboardPage() {
                 {recentQuizzes.map((quiz) => (
                   <div
                     key={quiz.id}
-                    onClick={() => quiz.status === 'Completed' && router.push(`/dashboard/analytics/${quiz.id}`)}
+                    onClick={() =>
+                      quiz.status === 'Completed' &&
+                      router.push(`/dashboard/analytics/${quiz.id}`)
+                    }
                     className="flex justify-between items-center px-2 py-3 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md transition cursor-pointer"
                   >
                     <div>
                       <p className="font-medium">{quiz.name}</p>
-                      <p className="text-sm text-gray-500">{quiz.participants} participants • {quiz.date}</p>
+                      <p className="text-sm text-gray-500">
+                        {quiz.participants} participants • {quiz.date}
+                      </p>
                     </div>
-                    <span className={`text-xs px-2 py-1 rounded-full ${
-                      quiz.status === 'Active'
-                        ? 'bg-gray-100 text-black dark:bg-gray-700 dark:text-white'
-                        : 'bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
-                    }`}>
+                    <span
+                      className={`text-xs px-2 py-1 rounded-full ${
+                        quiz.status === 'Active'
+                          ? 'bg-gray-100 text-black dark:bg-gray-700 dark:text-white'
+                          : 'bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
+                      }`}
+                    >
                       {quiz.status}
                     </span>
                   </div>
@@ -147,4 +174,6 @@ export default function DashboardPage() {
       </main>
     </div>
   );
-}
+};
+
+export default DashboardPage;

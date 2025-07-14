@@ -1,9 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { Button } from '@/app/component/ui/button';
-import QuizIdModal from '@/app/component/dashboard/quixModal';
-import { useQuizStore } from '@/app/store/useQuizStore';
+import { Button } from '@/component/ui/button';
+import QuizIdModal from '@/component/dashboard/quixModal';
+import { useQuizStore } from '@/store/useQuizStore';
 
 export default function StudentDashboardPage() {
   const [showModal, setShowModal] = useState(false);

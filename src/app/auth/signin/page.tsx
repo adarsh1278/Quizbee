@@ -2,10 +2,10 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent } from '@/app/component/ui/card';
-import { Input } from '@/app/component/ui/input';
-import { Button } from '@/app/component/ui/button';
-import { useQuizStore } from '@/app/store/useQuizStore';
+import { Card, CardContent } from '@/component/ui/card';
+import { Input } from '@/component/ui/input';
+import { Button } from '@/component/ui/button';
+import { useQuizStore } from '@/store/useQuizStore';
 
 export default function SignInPage() {
   const [step, setStep] = useState<1 | 2>(1);

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/app/component/ui/button';
+import { Button } from '@/component/ui/button';
 
 type QuizIdModalProps = {
   isOpen: boolean;

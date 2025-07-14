@@ -1,8 +1,8 @@
 'use client';
 
-import { Button } from '@/app/component/ui/button';
+import { Button } from '@/component/ui/button';
 import { useRouter } from 'next/navigation';
-import { useQuizStore } from '@/app/store/useQuizStore';
+import { useQuizStore } from '@/store/useQuizStore';
 
 export default function HomePage() {
   const router = useRouter();

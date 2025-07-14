@@ -1,8 +1,8 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
-import { Button } from '@/app/component/ui/button';
-import { Card, CardContent } from '@/app/component/ui/card';
+import { Button } from '@/component/ui/button';
+import { Card, CardContent } from '@/component/ui/card';
 import {
   BarChart,
   Bar,
@@ -13,11 +13,25 @@ import {
   CartesianGrid
 } from 'recharts';
 
+type ScoreRange = {
+  range: string;
+  count: number;
+};
+
+type AnalyticsData = {
+  title: string;
+  participants: number;
+  averageScore: number;
+  highestScore: number;
+  lowestScore: number;
+  scoreDistribution: ScoreRange[];
+};
+
 export default function QuizAnalyticsPage() {
-  const { quizId } = useParams();
+  const params = useParams() as { quizId: string };
   const router = useRouter();
 
-  const analytics = {
+  const analytics: AnalyticsData = {
     title: 'React Concepts',
     participants: 32,
     averageScore: 76,
@@ -39,7 +53,7 @@ export default function QuizAnalyticsPage() {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-semibold">Analytics: {analytics.title}</h1>
-            <p className="text-gray-500 text-sm mt-1">Quiz ID: {quizId}</p>
+            <p className="text-gray-500 text-sm mt-1">Quiz ID: {params.quizId}</p>
           </div>
           <Button
             variant="outline"
