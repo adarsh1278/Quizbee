@@ -12,10 +12,10 @@ export default function SignInPage() {
   const [selectedRole, setSelectedRole] = useState<'examiner' | 'student' | null>(null);
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
-  
+
   const router = useRouter();
-  const setUsername = useQuizStore((state:any) => state.setUsername);
-  const setRole = useQuizStore((state:any) => state.setRole);
+  const setUsername = useQuizStore((state) => state.setUsername);
+  const setRole = useQuizStore((state) => state.setRole);
 
   const handleRoleSelect = (role: 'examiner' | 'student') => {
     setSelectedRole(role);
@@ -31,7 +31,7 @@ export default function SignInPage() {
       setError('Email is required');
       return;
     }
-    
+
     if (!validateEmail(email)) {
       setError('Please enter a valid email');
       return;
@@ -39,7 +39,7 @@ export default function SignInPage() {
 
     setUsername(email);
     setRole(selectedRole);
-    
+
     if (selectedRole === 'examiner') {
       router.push('/dashboard');
     } else {
@@ -91,7 +91,7 @@ export default function SignInPage() {
                   </div>
                 </div>
               </Button>
-              
+
               <Button
                 variant="outline"
                 className="w-full py-6 border-2 border-slate-200 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:hover:border-slate-600 dark:hover:bg-slate-800 transition-all duration-200"
@@ -119,23 +119,22 @@ export default function SignInPage() {
                   value={email}
                   onChange={(e) => handleEmailChange(e.target.value)}
                   onKeyPress={handleKeyPress}
-                  className={`w-full h-12 px-4 border-2 rounded-lg transition-all ${
-                    error 
-                      ? 'border-red-300 bg-red-50 dark:bg-red-900/20' 
+                  className={`w-full h-12 px-4 border-2 rounded-lg transition-all ${error
+                      ? 'border-red-300 bg-red-50 dark:bg-red-900/20'
                       : 'border-slate-200 focus:border-slate-400 dark:border-slate-600 dark:focus:border-slate-500'
-                  }`}
+                    }`}
                   autoFocus
                 />
                 {error && <p className="text-red-500 text-xs mt-2 ml-1">{error}</p>}
               </div>
-              
-              <Button 
-                onClick={handleContinue} 
+
+              <Button
+                onClick={handleContinue}
                 className="w-full h-12 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 font-semibold rounded-lg transition-all duration-200"
               >
                 Continue to {selectedRole === 'student' ? 'Dashboard' : 'Exam Portal'}
               </Button>
-              
+
               <Button
                 variant="ghost"
                 className="w-full h-10 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
@@ -148,10 +147,10 @@ export default function SignInPage() {
               >
                 ← Back to role selection
               </Button>
-              
+
               <div className="text-center pt-4 border-t border-slate-200 dark:border-slate-700">
                 <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">
-                  Don't have an account? 
+                  Don&apos;t have an account?
                   <button className="text-slate-900 dark:text-white hover:underline ml-1 font-medium">
                     Sign Up
                   </button>

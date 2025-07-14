@@ -10,7 +10,7 @@ export default function HomePage() {
 
   const handleNavigation = () => {
     if (!username) {
-      router.push('/signin'); 
+      router.push('/signin');
     } else {
       router.push('/dashboard');
     }
@@ -24,7 +24,7 @@ export default function HomePage() {
         </h1>
         <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
           ScoreBee is your intelligent platform for creating, managing, and analyzing quizzes in real time.
-          Whether you're an educator or a student, we simplify assessments and boost learning.
+          Whether you&apos;re an educator or a student, we simplify assessments and boost learning.
         </p>
 
         <Button

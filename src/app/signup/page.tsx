@@ -17,11 +17,11 @@ export default function SignUpPage() {
     confirmPassword: '',
     institution: ''
   });
-  const [errors, setErrors] = useState<{[key: string]: string}>({});
-  
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
   const router = useRouter();
-  const setUsername = useQuizStore((state:any) => state.setUsername);
-  const setRole = useQuizStore((state:any) => state.setRole);
+  const setUsername = useQuizStore((state) => state.setUsername);
+  const setRole = useQuizStore((state) => state.setRole);
 
   const handleRoleSelect = (role: 'examiner' | 'student') => {
     setSelectedRole(role);
@@ -29,8 +29,8 @@ export default function SignUpPage() {
   };
 
   const validateForm = () => {
-    const newErrors: {[key: string]: string} = {};
-    
+    const newErrors: { [key: string]: string } = {};
+
     if (!formData.fullName.trim()) newErrors.fullName = 'Full name is required';
     if (!formData.email.trim()) newErrors.email = 'Email is required';
     if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Email is invalid';
@@ -40,17 +40,17 @@ export default function SignUpPage() {
     if (selectedRole === 'examiner' && !formData.institution.trim()) {
       newErrors.institution = 'Institution is required for examiners';
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSignUp = () => {
     if (!validateForm()) return;
-    
+
     setUsername(formData.fullName);
     setRole(selectedRole);
-    
+
     if (selectedRole === 'examiner') {
       router.push('/dashboard');
     } else {
@@ -104,7 +104,7 @@ export default function SignUpPage() {
                   </div>
                 </div>
               </Button>
-              
+
               <Button
                 variant="outline"
                 className="w-full py-6 border-2 border-slate-200 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:hover:border-slate-600 dark:hover:bg-slate-800 transition-all duration-200"
@@ -130,11 +130,10 @@ export default function SignUpPage() {
                   placeholder="Full Name"
                   value={formData.fullName}
                   onChange={(e) => handleInputChange('fullName', e.target.value)}
-                  className={`w-full h-12 px-4 border-2 rounded-lg transition-all ${
-                    errors.fullName 
-                      ? 'border-red-300 bg-red-50 dark:bg-red-900/20' 
+                  className={`w-full h-12 px-4 border-2 rounded-lg transition-all ${errors.fullName
+                      ? 'border-red-300 bg-red-50 dark:bg-red-900/20'
                       : 'border-slate-200 focus:border-slate-400 dark:border-slate-600 dark:focus:border-slate-500'
-                  }`}
+                    }`}
                   autoFocus
                 />
                 {errors.fullName && <p className="text-red-500 text-xs mt-2 ml-1">{errors.fullName}</p>}
@@ -146,11 +145,10 @@ export default function SignUpPage() {
                   placeholder="Email Address"
                   value={formData.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
-                  className={`w-full h-12 px-4 border-2 rounded-lg transition-all ${
-                    errors.email 
-                      ? 'border-red-300 bg-red-50 dark:bg-red-900/20' 
+                  className={`w-full h-12 px-4 border-2 rounded-lg transition-all ${errors.email
+                      ? 'border-red-300 bg-red-50 dark:bg-red-900/20'
                       : 'border-slate-200 focus:border-slate-400 dark:border-slate-600 dark:focus:border-slate-500'
-                  }`}
+                    }`}
                 />
                 {errors.email && <p className="text-red-500 text-xs mt-2 ml-1">{errors.email}</p>}
               </div>
@@ -161,11 +159,10 @@ export default function SignUpPage() {
                   placeholder="Password"
                   value={formData.password}
                   onChange={(e) => handleInputChange('password', e.target.value)}
-                  className={`w-full h-12 px-4 border-2 rounded-lg transition-all ${
-                    errors.password 
-                      ? 'border-red-300 bg-red-50 dark:bg-red-900/20' 
+                  className={`w-full h-12 px-4 border-2 rounded-lg transition-all ${errors.password
+                      ? 'border-red-300 bg-red-50 dark:bg-red-900/20'
                       : 'border-slate-200 focus:border-slate-400 dark:border-slate-600 dark:focus:border-slate-500'
-                  }`}
+                    }`}
                 />
                 {errors.password && <p className="text-red-500 text-xs mt-2 ml-1">{errors.password}</p>}
               </div>
@@ -177,11 +174,10 @@ export default function SignUpPage() {
                   value={formData.confirmPassword}
                   onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
                   onKeyPress={handleKeyPress}
-                  className={`w-full h-12 px-4 border-2 rounded-lg transition-all ${
-                    errors.confirmPassword 
-                      ? 'border-red-300 bg-red-50 dark:bg-red-900/20' 
+                  className={`w-full h-12 px-4 border-2 rounded-lg transition-all ${errors.confirmPassword
+                      ? 'border-red-300 bg-red-50 dark:bg-red-900/20'
                       : 'border-slate-200 focus:border-slate-400 dark:border-slate-600 dark:focus:border-slate-500'
-                  }`}
+                    }`}
                 />
                 {errors.confirmPassword && <p className="text-red-500 text-xs mt-2 ml-1">{errors.confirmPassword}</p>}
               </div>
@@ -193,23 +189,22 @@ export default function SignUpPage() {
                     value={formData.institution}
                     onChange={(e) => handleInputChange('institution', e.target.value)}
                     onKeyPress={handleKeyPress}
-                    className={`w-full h-12 px-4 border-2 rounded-lg transition-all ${
-                      errors.institution 
-                        ? 'border-red-300 bg-red-50 dark:bg-red-900/20' 
+                    className={`w-full h-12 px-4 border-2 rounded-lg transition-all ${errors.institution
+                        ? 'border-red-300 bg-red-50 dark:bg-red-900/20'
                         : 'border-slate-200 focus:border-slate-400 dark:border-slate-600 dark:focus:border-slate-500'
-                    }`}
+                      }`}
                   />
                   {errors.institution && <p className="text-red-500 text-xs mt-2 ml-1">{errors.institution}</p>}
                 </div>
               )}
-              
-              <Button 
-                onClick={handleSignUp} 
+
+              <Button
+                onClick={handleSignUp}
                 className="w-full h-12 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 font-semibold rounded-lg transition-all duration-200"
               >
                 Create Account
               </Button>
-              
+
               <Button
                 variant="ghost"
                 className="w-full h-10 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
@@ -228,10 +223,10 @@ export default function SignUpPage() {
               >
                 ← Back to role selection
               </Button>
-              
+
               <div className="text-center pt-4 border-t border-slate-200 dark:border-slate-700">
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Already have an account? 
+                  Already have an account?
                   <button className="text-slate-900 dark:text-white hover:underline ml-1 font-medium">
                     Sign In
                   </button>
