@@ -9,12 +9,12 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 }
 
 const baseStyles =
-  'inline-flex items-center justify-center rounded-lg font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none';
+  'inline-flex items-center justify-center rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none';
 
 const variantStyles = {
-  default: 'bg-slate-900 text-white hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100',
-  outline: 'border-2 border-slate-200 text-slate-900 hover:bg-slate-50 dark:border-slate-700 dark:text-white dark:hover:bg-slate-800',
-  ghost: 'bg-transparent hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400',
+  default: 'bg-gray-900 text-white hover:bg-gray-800 shadow-md hover:shadow-lg',
+  outline: 'border border-gray-200 bg-white/50 backdrop-blur-sm text-gray-900 hover:bg-white/70 focus:bg-white',
+  ghost: 'bg-transparent hover:bg-gray-100 text-gray-600',
 };
 
 const sizeStyles = {
