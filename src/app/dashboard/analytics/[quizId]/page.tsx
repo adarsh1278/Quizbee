@@ -49,7 +49,7 @@ export default function QuizAnalyticsPage() {
   return (
     <div className="min-h-screen bg-white text-black dark:bg-black dark:text-white">
       <main className="max-w-5xl mx-auto px-4 py-10 space-y-8">
-        {/* Header */}
+        
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-semibold">Analytics: {analytics.title}</h1>

@@ -6,7 +6,8 @@ import { Card, CardContent } from '@/component/ui/card';
 import { Input } from '@/component/ui/input';
 import { Button } from '@/component/ui/button';
 import { useQuizStore } from '@/store/useQuizStore';
-
+import api from '@/lib/axios';
+import Router from 'next/router';
 export default function SignUpPage() {
   const [step, setStep] = useState<1 | 2>(1);
   const [selectedRole, setSelectedRole] = useState<'examiner' | 'student' | null>(null);
@@ -15,7 +16,7 @@ export default function SignUpPage() {
     email: '',
     password: '',
     confirmPassword: '',
-    institution: ''
+    institution: '',
   });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
@@ -27,7 +28,7 @@ export default function SignUpPage() {
     setSelectedRole(role);
     setStep(2);
   };
-
+   
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
 
@@ -45,23 +46,37 @@ export default function SignUpPage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSignUp = () => {
+  const handleSignUp = async () => {
     if (!validateForm()) return;
 
-    setUsername(formData.fullName);
-    setRole(selectedRole);
+    try {
+      const response = await api.post('auth/register', {
+        name:formData.fullName,
+        email: formData.email,
+        password: formData.password,
+        role: selectedRole?.toUpperCase(),
+      });
 
-    if (selectedRole === 'examiner') {
-      router.push('/dashboard');
-    } else {
-      router.push('/student');
+      const { user } = response.data;
+
+      setUsername(formData.fullName);
+      setRole(selectedRole);
+
+      if (selectedRole === 'examiner') {
+        router.push('/dashboard');
+      } else {
+        router.push('/student');
+      }
+    } catch (err: any) {
+      console.error('Signup failed:', err);
+      alert(err.response?.data?.error || 'Something went wrong');
     }
   };
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
+      setErrors((prev) => ({ ...prev, [field]: '' }));
     }
   };
 
@@ -91,96 +106,61 @@ export default function SignUpPage() {
             <div className="space-y-3">
               <Button
                 variant="outline"
-                className="w-full py-6 border-2 border-slate-200 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:hover:border-slate-600 dark:hover:bg-slate-800 transition-all duration-200"
+                className="w-full py-6"
                 onClick={() => handleRoleSelect('student')}
               >
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 bg-blue-50 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
-                    <span className="text-blue-600 dark:text-blue-400 text-lg">🎓</span>
-                  </div>
-                  <div className="text-left">
-                    <div className="font-semibold text-slate-900 dark:text-white">Student</div>
-                    <div className="text-xs text-slate-500 dark:text-slate-400">Join to take exams and quizzes</div>
-                  </div>
-                </div>
+                🎓 Student
               </Button>
 
               <Button
                 variant="outline"
-                className="w-full py-6 border-2 border-slate-200 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:hover:border-slate-600 dark:hover:bg-slate-800 transition-all duration-200"
+                className="w-full py-6"
                 onClick={() => handleRoleSelect('examiner')}
               >
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 bg-emerald-50 dark:bg-emerald-900/30 rounded-full flex items-center justify-center">
-                    <span className="text-emerald-600 dark:text-emerald-400 text-lg">👨‍🏫</span>
-                  </div>
-                  <div className="text-left">
-                    <div className="font-semibold text-slate-900 dark:text-white">Examiner</div>
-                    <div className="text-xs text-slate-500 dark:text-slate-400">Create and manage examinations</div>
-                  </div>
-                </div>
+                👨‍🏫 Examiner
               </Button>
             </div>
           )}
 
           {step === 2 && (
             <div className="space-y-5">
-              <div>
-                <Input
-                  placeholder="Full Name"
-                  value={formData.fullName}
-                  onChange={(e) => handleInputChange('fullName', e.target.value)}
-                  className={`w-full h-12 px-4 border-2 rounded-lg transition-all ${errors.fullName
-                      ? 'border-red-300 bg-red-50 dark:bg-red-900/20'
-                      : 'border-slate-200 focus:border-slate-400 dark:border-slate-600 dark:focus:border-slate-500'
-                    }`}
-                  autoFocus
-                />
-                {errors.fullName && <p className="text-red-500 text-xs mt-2 ml-1">{errors.fullName}</p>}
-              </div>
+              <Input
+                placeholder="Full Name"
+                value={formData.fullName}
+                onChange={(e) => handleInputChange('fullName', e.target.value)}
+                className={errors.fullName ? 'border-red-500' : ''}
+              />
+              {errors.fullName && <p className="text-red-500 text-xs">{errors.fullName}</p>}
 
-              <div>
-                <Input
-                  type="email"
-                  placeholder="Email Address"
-                  value={formData.email}
-                  onChange={(e) => handleInputChange('email', e.target.value)}
-                  className={`w-full h-12 px-4 border-2 rounded-lg transition-all ${errors.email
-                      ? 'border-red-300 bg-red-50 dark:bg-red-900/20'
-                      : 'border-slate-200 focus:border-slate-400 dark:border-slate-600 dark:focus:border-slate-500'
-                    }`}
-                />
-                {errors.email && <p className="text-red-500 text-xs mt-2 ml-1">{errors.email}</p>}
-              </div>
+              <Input
+                type="email"
+                placeholder="Email Address"
+                value={formData.email}
+                onChange={(e) => handleInputChange('email', e.target.value)}
+                className={errors.email ? 'border-red-500' : ''}
+              />
+              {errors.email && <p className="text-red-500 text-xs">{errors.email}</p>}
 
-              <div>
-                <Input
-                  type="password"
-                  placeholder="Password"
-                  value={formData.password}
-                  onChange={(e) => handleInputChange('password', e.target.value)}
-                  className={`w-full h-12 px-4 border-2 rounded-lg transition-all ${errors.password
-                      ? 'border-red-300 bg-red-50 dark:bg-red-900/20'
-                      : 'border-slate-200 focus:border-slate-400 dark:border-slate-600 dark:focus:border-slate-500'
-                    }`}
-                />
-                {errors.password && <p className="text-red-500 text-xs mt-2 ml-1">{errors.password}</p>}
-              </div>
+              <Input
+                type="password"
+                placeholder="Password"
+                value={formData.password}
+                onChange={(e) => handleInputChange('password', e.target.value)}
+                className={errors.password ? 'border-red-500' : ''}
+              />
+              {errors.password && <p className="text-red-500 text-xs">{errors.password}</p>}
 
-              <div>
-                <Input
-                  type="password"
-                  placeholder="Confirm Password"
-                  value={formData.confirmPassword}
-                  onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  className={`w-full h-12 px-4 border-2 rounded-lg transition-all ${errors.confirmPassword
-                      ? 'border-red-300 bg-red-50 dark:bg-red-900/20'
-                      : 'border-slate-200 focus:border-slate-400 dark:border-slate-600 dark:focus:border-slate-500'
-                    }`}
-                />
-                {errors.confirmPassword && <p className="text-red-500 text-xs mt-2 ml-1">{errors.confirmPassword}</p>}
-              </div>
+              <Input
+                type="password"
+                placeholder="Confirm Password"
+                value={formData.confirmPassword}
+                onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
+                onKeyPress={handleKeyPress}
+                className={errors.confirmPassword ? 'border-red-500' : ''}
+              />
+              {errors.confirmPassword && (
+                <p className="text-red-500 text-xs">{errors.confirmPassword}</p>
+              )}
 
               {selectedRole === 'examiner' && (
                 <div>
@@ -189,25 +169,22 @@ export default function SignUpPage() {
                     value={formData.institution}
                     onChange={(e) => handleInputChange('institution', e.target.value)}
                     onKeyPress={handleKeyPress}
-                    className={`w-full h-12 px-4 border-2 rounded-lg transition-all ${errors.institution
-                        ? 'border-red-300 bg-red-50 dark:bg-red-900/20'
-                        : 'border-slate-200 focus:border-slate-400 dark:border-slate-600 dark:focus:border-slate-500'
-                      }`}
+                    className={errors.institution ? 'border-red-500' : ''}
                   />
-                  {errors.institution && <p className="text-red-500 text-xs mt-2 ml-1">{errors.institution}</p>}
+                  {errors.institution && <p className="text-red-500 text-xs">{errors.institution}</p>}
                 </div>
               )}
 
               <Button
                 onClick={handleSignUp}
-                className="w-full h-12 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 font-semibold rounded-lg transition-all duration-200"
+                className="w-full h-12 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-semibold rounded-lg"
               >
                 Create Account
               </Button>
 
               <Button
                 variant="ghost"
-                className="w-full h-10 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+                className="w-full h-10"
                 onClick={() => {
                   setStep(1);
                   setFormData({
@@ -224,12 +201,10 @@ export default function SignUpPage() {
                 ← Back to role selection
               </Button>
 
-              <div className="text-center pt-4 border-t border-slate-200 dark:border-slate-700">
-                <p className="text-xs text-slate-500 dark:text-slate-400">
+              <div className="text-center pt-4 border-t">
+                <p className="text-xs">
                   Already have an account?
-                  <button className="text-slate-900 dark:text-white hover:underline ml-1 font-medium">
-                    Sign In
-                  </button>
+                  <button onClick={()=>{router.push('/auth/signin')}} className="hover:underline ml-1 font-medium">Sign In</button>
                 </p>
               </div>
             </div>

@@ -108,7 +108,7 @@ export default function AIQuizGenerator({ onQuestionsGenerated }: AIQuizGenerato
     };
 
     return (
-        <Dialog open={isOpen} onOpenChange={(open) => {
+        <Dialog open={isOpen} onOpenChange={(open:any) => {
             setIsOpen(open);
             if (!open) resetForm();
         }}>

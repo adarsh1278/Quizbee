@@ -34,7 +34,7 @@ type PerformanceDataItem = {
   avgScore: number;
 };
 
-const DashboardPage: FC = () => {
+const dashboardPage: FC = () => {
   const router = useRouter();
   const username = useQuizStore((state) => state.username);
 
@@ -175,4 +175,4 @@ const DashboardPage: FC = () => {
   );
 };
 
-export default DashboardPage;
+export default dashboardPage;

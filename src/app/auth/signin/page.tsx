@@ -2,167 +2,101 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent } from '@/component/ui/card';
 import { Input } from '@/component/ui/input';
 import { Button } from '@/component/ui/button';
-import { useQuizStore } from '@/store/useQuizStore';
+import api from '@/lib/axios';
 
 export default function SignInPage() {
-  const [step, setStep] = useState<1 | 2>(1);
-  const [selectedRole, setSelectedRole] = useState<'examiner' | 'student' | null>(null);
+  const router = useRouter();
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [role, setRole] = useState<'STUDENT' | 'TEACHER' | 'ADMIN' | 'SUPERADMIN'>('STUDENT');
   const [error, setError] = useState('');
 
-  const router = useRouter();
-  const setUsername = useQuizStore((state) => state.setUsername);
-  const setRole = useQuizStore((state) => state.setRole);
+  const handleSignIn = async () => {
+    setError('');
 
-  const handleRoleSelect = (role: 'examiner' | 'student') => {
-    setSelectedRole(role);
-    setStep(2);
-  };
-
-  const validateEmail = (email: string) => {
-    return /\S+@\S+\.\S+/.test(email);
-  };
-
-  const handleContinue = () => {
-    if (!email.trim()) {
-      setError('Email is required');
+    if (!email || !password) {
+      setError('Email and password are required.');
       return;
     }
 
-    if (!validateEmail(email)) {
-      setError('Please enter a valid email');
-      return;
-    }
+    try {
+      const response = await api.post(`/auth/login?role=${role}`, {
+        email,
+        password,
+      });
 
-    setUsername(email);
-    setRole(selectedRole);
+      const { user } = response.data;
 
-    if (selectedRole === 'examiner') {
-      router.push('/dashboard');
-    } else {
-      router.push('/student');
+      if (user.role === 'STUDENT') {
+        router.push('/student');
+      } else {
+        router.push('/dashboard');
+      }
+    } catch (err: any) {
+      console.error('Login failed:', err);
+      setError(err.response?.data?.error || 'Login failed');
     }
   };
 
-  const handleEmailChange = (value: string) => {
-    setEmail(value);
-    if (error) setError('');
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') handleContinue();
+  const handleGoogleLogin = () => {
+    window.location.href = 'http://localhost:8000/api/auth/google';
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-4">
-      <Card className="w-full max-w-md border-0 shadow-lg bg-white/95 backdrop-blur-sm dark:bg-slate-900/95">
-        <CardContent className="p-8">
-          <div className="text-center mb-8">
-            <div className="w-12 h-12 bg-slate-900 dark:bg-white rounded-lg mx-auto mb-4 flex items-center justify-center">
-              <span className="text-white dark:text-slate-900 font-bold text-lg">
-                {step === 1 ? '👋' : selectedRole === 'student' ? '🎓' : '👨‍🏫'}
-              </span>
-            </div>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
-              {step === 1 ? 'Welcome Back' : `Sign in as ${selectedRole}`}
-            </h1>
-            <p className="text-slate-600 dark:text-slate-400 text-sm">
-              {step === 1 ? 'Choose your role to continue' : 'Enter your email to access your account'}
-            </p>
+    <div className="min-h-screen flex items-center justify-center bg-slate-100 dark:bg-slate-900 p-4">
+      <div className="w-full max-w-md p-8 bg-white dark:bg-slate-800 shadow-lg rounded-lg space-y-6">
+        <h2 className="text-2xl font-bold text-center text-black dark:text-white">Sign In</h2>
+
+        <Input
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+
+        <Input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+
+        <select
+          value={role}
+          onChange={(e) => setRole(e.target.value as any)}
+          className="w-full border rounded-md p-2 text-sm text-slate-700 dark:bg-slate-700 dark:text-white"
+        >
+          <option value="STUDENT">Student</option>
+          <option value="TEACHER">Teacher</option>
+          <option value="ADMIN">Admin</option>
+          <option value="SUPERADMIN">Superadmin</option>
+        </select>
+
+        {error && <p className="text-sm text-red-500">{error}</p>}
+
+        <Button onClick={handleSignIn} className="w-full h-10">
+          Sign In
+        </Button>
+
+        {/* Divider */}
+        <div className="relative my-4">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-300" />
           </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="bg-white dark:bg-slate-800 px-2 text-gray-500">OR</span>
+          </div>
+        </div>
 
-          {step === 1 && (
-            <div className="space-y-3">
-              <Button
-                variant="outline"
-                className="w-full py-6 border-2 border-slate-200 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:hover:border-slate-600 dark:hover:bg-slate-800 transition-all duration-200"
-                onClick={() => handleRoleSelect('student')}
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 bg-blue-50 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
-                    <span className="text-blue-600 dark:text-blue-400 text-lg">🎓</span>
-                  </div>
-                  <div className="text-left">
-                    <div className="font-semibold text-slate-900 dark:text-white">Student</div>
-                    <div className="text-xs text-slate-500 dark:text-slate-400">Access your exams and results</div>
-                  </div>
-                </div>
-              </Button>
-
-              <Button
-                variant="outline"
-                className="w-full py-6 border-2 border-slate-200 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:hover:border-slate-600 dark:hover:bg-slate-800 transition-all duration-200"
-                onClick={() => handleRoleSelect('examiner')}
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 bg-emerald-50 dark:bg-emerald-900/30 rounded-full flex items-center justify-center">
-                    <span className="text-emerald-600 dark:text-emerald-400 text-lg">👨‍🏫</span>
-                  </div>
-                  <div className="text-left">
-                    <div className="font-semibold text-slate-900 dark:text-white">Examiner</div>
-                    <div className="text-xs text-slate-500 dark:text-slate-400">Manage your examinations</div>
-                  </div>
-                </div>
-              </Button>
-            </div>
-          )}
-
-          {step === 2 && (
-            <div className="space-y-5">
-              <div>
-                <Input
-                  type="email"
-                  placeholder="Enter your email address"
-                  value={email}
-                  onChange={(e) => handleEmailChange(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  className={`w-full h-12 px-4 border-2 rounded-lg transition-all ${error
-                      ? 'border-red-300 bg-red-50 dark:bg-red-900/20'
-                      : 'border-slate-200 focus:border-slate-400 dark:border-slate-600 dark:focus:border-slate-500'
-                    }`}
-                  autoFocus
-                />
-                {error && <p className="text-red-500 text-xs mt-2 ml-1">{error}</p>}
-              </div>
-
-              <Button
-                onClick={handleContinue}
-                className="w-full h-12 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 font-semibold rounded-lg transition-all duration-200"
-              >
-                Continue to {selectedRole === 'student' ? 'Dashboard' : 'Exam Portal'}
-              </Button>
-
-              <Button
-                variant="ghost"
-                className="w-full h-10 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
-                onClick={() => {
-                  setStep(1);
-                  setEmail('');
-                  setError('');
-                  setSelectedRole(null);
-                }}
-              >
-                ← Back to role selection
-              </Button>
-
-              <div className="text-center pt-4 border-t border-slate-200 dark:border-slate-700">
-                <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">
-                  Don&apos;t have an account?
-                  <button className="text-slate-900 dark:text-white hover:underline ml-1 font-medium">
-                    Sign Up
-                  </button>
-                </p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  🚀 Google Auth coming soon
-                </p>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+        {/* Google Sign In */}
+        <Button
+          onClick={handleGoogleLogin}
+          className="w-full h-10 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded"
+        >
+          Sign in with Google
+        </Button>
+      </div>
     </div>
   );
 }

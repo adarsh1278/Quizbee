@@ -10,7 +10,7 @@ export default function HomePage() {
 
   const handleNavigation = () => {
     if (!username) {
-      router.push('/signin');
+      router.push('/auth/signup');
     } else {
       router.push('/dashboard');
     }
