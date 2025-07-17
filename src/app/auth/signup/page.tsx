@@ -10,7 +10,7 @@ import api from '@/lib/axios';
 import Router from 'next/router';
 export default function SignUpPage() {
   const [step, setStep] = useState<1 | 2>(1);
-  const [selectedRole, setSelectedRole] = useState<'examiner' | 'student' | null>(null);
+  const [selectedRole, setSelectedRole] = useState<'Teacher' | 'student' | null>(null);
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -24,7 +24,7 @@ export default function SignUpPage() {
   const setUsername = useQuizStore((state) => state.setUsername);
   const setRole = useQuizStore((state) => state.setRole);
 
-  const handleRoleSelect = (role: 'examiner' | 'student') => {
+  const handleRoleSelect = (role: 'Teacher' | 'student') => {
     setSelectedRole(role);
     setStep(2);
   };
@@ -38,8 +38,8 @@ export default function SignUpPage() {
     if (!formData.password) newErrors.password = 'Password is required';
     if (formData.password.length < 6) newErrors.password = 'Password must be at least 6 characters';
     if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = 'Passwords do not match';
-    if (selectedRole === 'examiner' && !formData.institution.trim()) {
-      newErrors.institution = 'Institution is required for examiners';
+    if (selectedRole === 'Teacher' && !formData.institution.trim()) {
+      newErrors.institution = 'Institution is required for Teachers';
     }
 
     setErrors(newErrors);
@@ -62,7 +62,7 @@ export default function SignUpPage() {
       setUsername(formData.fullName);
       setRole(selectedRole);
 
-      if (selectedRole === 'examiner') {
+      if (selectedRole === 'Teacher') {
         router.push('/dashboard');
       } else {
         router.push('/student');
@@ -115,9 +115,9 @@ export default function SignUpPage() {
               <Button
                 variant="outline"
                 className="w-full py-6"
-                onClick={() => handleRoleSelect('examiner')}
+                onClick={() => handleRoleSelect('Teacher')}
               >
-                👨‍🏫 Examiner
+                👨‍🏫 Teacher
               </Button>
             </div>
           )}
@@ -162,7 +162,7 @@ export default function SignUpPage() {
                 <p className="text-red-500 text-xs">{errors.confirmPassword}</p>
               )}
 
-              {selectedRole === 'examiner' && (
+              {selectedRole === 'Teacher' && (
                 <div>
                   <Input
                     placeholder="Institution/Organization"

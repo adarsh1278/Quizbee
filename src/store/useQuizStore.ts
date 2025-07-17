@@ -23,12 +23,12 @@ interface QuizState {
   players: Player[];
   currentQuestion: Question | null;
   quizStarted: boolean;
-  role: 'student' | 'examiner' | null;
+  role: 'student' | 'Teacher' | null;
 
   setUsername: (name: string) => void;
   setEmail: (email: string) => void;
   setInstitution: (inst: string) => void;
-  setRole: (role: 'student' | 'examiner' | null) => void;
+  setRole: (role: 'student' | 'Teacher' | null) => void;
   setRoomCode: (code: string) => void;
   setIsHost: (host: boolean) => void;
   incrementScore: () => void;
