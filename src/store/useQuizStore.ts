@@ -39,17 +39,10 @@ interface QuizState {
   players: Player[];
   currentQuestion: Question | null;
   quizStarted: boolean;
-  role: 'student' | 'examiner' | null;
-  
-  // Quiz creation state
-  isCreating: boolean;
-  createdQuizId: string | null;
-  createError: string | null;
-
-  setUsername: (name: string) => void;
+   setUsername: (name: string) => void;
   setEmail: (email: string) => void;
   setInstitution: (inst: string) => void;
-  setRole: (role: 'student' | 'examiner' | null) => void;
+  setRole: (role: 'student' | 'Teacher' | null) => void;
   setRoomCode: (code: string) => void;
   setIsHost: (host: boolean) => void;
   incrementScore: () => void;
