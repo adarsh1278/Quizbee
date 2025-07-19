@@ -1,10 +1,14 @@
 "use client"
 import { useEffect, useState, useRef } from "react";
+import { toastNotifications } from "@/lib/toastNotifications";
 import Questions from "./Question";
 import AIQuizGenerator from "./AIQuizGenerator";
 import QuizSidebar from "./QuizSidebar";
+import QuizCreatedModal from "@/component/dashboard/QuizCreatedModal";
+import LoadingSpinner from "@/component/ui/loading-spinner";
 import { Input } from "@/component/ui/input";
 import { Label } from "@/components/ui/label";
+import { useQuizStore } from "@/store/useQuizStore";
 import type { GeneratedQuestion } from "@/lib/gemini";
 
 interface Question {
@@ -21,6 +25,14 @@ export default function EvaluationQuestions() {
     const [quizTitle, setQuizTitle] = useState("");
     const [questions, setQuestions] = useState<Question[]>([]);
     const questionRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+    // Zustand store
+    const {
+        isCreating,
+        createdQuizId,
+        createQuiz,
+        clearCreateState
+    } = useQuizStore();
 
     useEffect(() => {
         console.log("Questions Updated:", questions);
@@ -47,6 +59,9 @@ export default function EvaluationQuestions() {
                 correctAnswer: 0,
             },
         ]);
+
+        toastNotifications.success.questionAdded();
+
         setTimeout(() => {
             if (questionRefs.current[questions.length]) {
                 questionRefs.current[questions.length]?.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -84,6 +99,7 @@ export default function EvaluationQuestions() {
         setQuestions((prevQuestions) =>
             prevQuestions.filter((_, index) => index !== questionIndex)
         );
+        toastNotifications.success.questionDeleted();
     }
 
     function handleAIGeneratedQuestions(generatedQuestions: GeneratedQuestion[]) {
@@ -121,6 +137,42 @@ export default function EvaluationQuestions() {
                 }
             }, 3000);
         }
+    }
+
+    async function handleCreateQuiz() {
+        if (!quizTitle.trim()) {
+            toastNotifications.error.missingTitle();
+            return;
+        }
+
+        if (questions.length === 0) {
+            toastNotifications.error.noQuestions();
+            return;
+        }
+
+        // Validate questions
+        const invalidQuestions = questions.filter(q =>
+            !q.text.trim() ||
+            q.options.some(opt => !opt.trim()) ||
+            q.marks <= 0 ||
+            q.time <= 0
+        );
+
+        if (invalidQuestions.length > 0) {
+            toastNotifications.error.invalidQuestions();
+            return;
+        }
+
+        // Transform questions to match API format
+        const apiQuestions = questions.map(q => ({
+            question: q.text,
+            options: q.options,
+            answerIndex: q.correctAnswer,
+            marks: q.marks,
+            timeLimit: q.time
+        }));
+
+        await createQuiz(quizTitle, apiQuestions);
     }
 
     return (<div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4">
@@ -191,17 +243,20 @@ export default function EvaluationQuestions() {
 
                         {questions.length > 0 && (
                             <>
-
-
                                 <div className="flex justify-center mt-6">
                                     <button
-                                        onClick={() => {
-                                            console.log("Quiz Title:", quizTitle);
-                                            console.log("Questions:", questions);
-                                        }}
-                                        className="px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl font-medium"
+                                        onClick={handleCreateQuiz}
+                                        disabled={isCreating || !quizTitle.trim()}
+                                        className="px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 disabled:from-gray-400 disabled:to-gray-400 text-white rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl font-medium flex items-center gap-2 disabled:cursor-not-allowed"
                                     >
-                                        Create Quiz
+                                        {isCreating ? (
+                                            <>
+                                                <LoadingSpinner size="sm" className="text-white" />
+                                                Creating Quiz...
+                                            </>
+                                        ) : (
+                                            'Create Quiz'
+                                        )}
                                     </button>
                                 </div>
                             </>
@@ -218,6 +273,16 @@ export default function EvaluationQuestions() {
                 </div>
             </div>
         </div>
+
+        {/* Success Modal */}
+        {createdQuizId && (
+            <QuizCreatedModal
+                isOpen={!!createdQuizId}
+                onClose={clearCreateState}
+                quizId={createdQuizId}
+                quizTitle={quizTitle}
+            />
+        )}
     </div>
     );
 }

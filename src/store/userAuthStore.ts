@@ -15,6 +15,7 @@ interface AuthStore {
   user: User | null;
   loading: boolean;
   error: string | null;
+  
   register: (name:string, email: string, password: string, role: Role) => Promise<void>;
   login: (email: string, password: string, role: Role) => Promise<void>;
   logout: () => Promise<void>;

@@ -1,4 +1,7 @@
 import { create } from 'zustand';
+import toast from 'react-hot-toast';
+import { toastNotifications } from '@/lib/toastNotifications';
+import api from '@/lib/axios';
 
 interface Player {
   id: string;
@@ -13,6 +16,19 @@ interface Question {
   correctAnswer: number;
 }
 
+interface CreateQuizQuestion {
+  question: string;
+  options: [string, string, string, string];
+  answerIndex: number;
+  marks: number;
+  timeLimit: number;
+}
+
+interface CreateQuizResponse {
+  message: string;
+  quizId: string;
+}
+
 interface QuizState {
   username: string;
   email: string;
@@ -24,6 +40,11 @@ interface QuizState {
   currentQuestion: Question | null;
   quizStarted: boolean;
   role: 'student' | 'examiner' | null;
+  
+  // Quiz creation state
+  isCreating: boolean;
+  createdQuizId: string | null;
+  createError: string | null;
 
   setUsername: (name: string) => void;
   setEmail: (email: string) => void;
@@ -37,6 +58,10 @@ interface QuizState {
   setCurrentQuestion: (question: Question | null) => void;
   setQuizStarted: (started: boolean) => void;
   resetQuiz: () => void;
+  
+  // Quiz creation actions
+  createQuiz: (title: string, questions: CreateQuizQuestion[]) => Promise<void>;
+  clearCreateState: () => void;
 }
 
 export const useQuizStore = create<QuizState>((set) => ({
@@ -50,6 +75,11 @@ export const useQuizStore = create<QuizState>((set) => ({
   currentQuestion: null,
   quizStarted: false,
   role: null,
+  
+  // Quiz creation state
+  isCreating: false,
+  createdQuizId: null,
+  createError: null,
 
   setUsername: (name) => set({ username: name }),
   setEmail: (email) => set({ email }),
@@ -75,4 +105,47 @@ export const useQuizStore = create<QuizState>((set) => ({
       currentQuestion: null,
       quizStarted: false,
     }),
+    
+  // Quiz creation actions
+  createQuiz: async (title: string, questions: CreateQuizQuestion[]) => {
+    set({ isCreating: true, createError: null, createdQuizId: null });
+    
+    const loadingToast = toastNotifications.loading.creatingQuiz();
+    
+    try {
+      const maxScore = questions.reduce((total, q) => total + q.marks, 0);
+      
+      const response = await api.post<CreateQuizResponse>('/quiz/create', {
+        title,
+        maxScore,
+        questions
+      });
+      
+      toast.dismiss(loadingToast);
+      toastNotifications.success.quizCreated();
+      
+      set({ 
+        isCreating: false, 
+        createdQuizId: response.data.quizId,
+        createError: null 
+      });
+    } catch (error: any) {
+      toast.dismiss(loadingToast);
+      
+      const errorMessage = error.response?.data?.error || 'Failed to create quiz';
+      toast.error(errorMessage);
+      
+      set({ 
+        isCreating: false, 
+        createError: errorMessage,
+        createdQuizId: null 
+      });
+    }
+  },
+  
+  clearCreateState: () => set({ 
+    isCreating: false, 
+    createdQuizId: null, 
+    createError: null 
+  }),
 }));
