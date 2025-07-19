@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState } from 'react';
+import { toastNotifications } from '@/lib/toastNotifications';
 import {
     Dialog,
     DialogContent,
@@ -85,6 +86,9 @@ export default function AIQuizGenerator({ onQuestionsGenerated }: AIQuizGenerato
             // Pass questions to parent component
             onQuestionsGenerated(questions);
 
+            // Show success message
+            toastNotifications.success.aiQuestionsGenerated(questions.length);
+
             // Close modal and reset form
             setIsOpen(false);
             setTopic('');
@@ -94,7 +98,10 @@ export default function AIQuizGenerator({ onQuestionsGenerated }: AIQuizGenerato
 
         } catch (error) {
             console.error('Error generating questions:', error);
-            setError(error instanceof Error ? error.message : 'Failed to generate questions');
+            const errorMessage = error instanceof Error ? error.message : 'Failed to generate questions';
+            setError(errorMessage);
+            // Use generic error toast for AI generation errors
+            toastNotifications.error.networkError();
         } finally {
             setIsLoading(false);
         }
@@ -108,7 +115,7 @@ export default function AIQuizGenerator({ onQuestionsGenerated }: AIQuizGenerato
     };
 
     return (
-        <Dialog open={isOpen} onOpenChange={(open:any) => {
+        <Dialog open={isOpen} onOpenChange={(open: any) => {
             setIsOpen(open);
             if (!open) resetForm();
         }}>

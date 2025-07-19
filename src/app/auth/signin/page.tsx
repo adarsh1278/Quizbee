@@ -41,7 +41,7 @@ export default function SignInPage() {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = 'http://localhost:8000/api/auth/google';
+    window.location.href = `http://localhost:8000/api/auth/google?role=${role}`;
   };
 
   return (
