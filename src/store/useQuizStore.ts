@@ -39,7 +39,12 @@ interface QuizState {
   players: Player[];
   currentQuestion: Question | null;
   quizStarted: boolean;
-   setUsername: (name: string) => void;
+  role: 'student' | 'Teacher' | null;
+  isCreating: boolean;
+  createdQuizId: string | null;
+  createError: string | null;
+
+  setUsername: (name: string) => void;
   setEmail: (email: string) => void;
   setInstitution: (inst: string) => void;
   setRole: (role: 'student' | 'Teacher' | null) => void;
@@ -51,8 +56,7 @@ interface QuizState {
   setCurrentQuestion: (question: Question | null) => void;
   setQuizStarted: (started: boolean) => void;
   resetQuiz: () => void;
-  
-  // Quiz creation actions
+
   createQuiz: (title: string, questions: CreateQuizQuestion[]) => Promise<void>;
   clearCreateState: () => void;
 }
@@ -68,8 +72,6 @@ export const useQuizStore = create<QuizState>((set) => ({
   currentQuestion: null,
   quizStarted: false,
   role: null,
-  
-  // Quiz creation state
   isCreating: false,
   createdQuizId: null,
   createError: null,
@@ -85,6 +87,7 @@ export const useQuizStore = create<QuizState>((set) => ({
   addPlayer: (player) => set((state) => ({ players: [...state.players, player] })),
   setCurrentQuestion: (question) => set({ currentQuestion: question }),
   setQuizStarted: (started) => set({ quizStarted: started }),
+
   resetQuiz: () =>
     set({
       username: '',
@@ -98,47 +101,47 @@ export const useQuizStore = create<QuizState>((set) => ({
       currentQuestion: null,
       quizStarted: false,
     }),
-    
-  // Quiz creation actions
+
   createQuiz: async (title: string, questions: CreateQuizQuestion[]) => {
     set({ isCreating: true, createError: null, createdQuizId: null });
-    
+
     const loadingToast = toastNotifications.loading.creatingQuiz();
-    
+
     try {
       const maxScore = questions.reduce((total, q) => total + q.marks, 0);
-      
+
       const response = await api.post<CreateQuizResponse>('/quiz/create', {
         title,
         maxScore,
-        questions
+        questions,
       });
-      
+
       toast.dismiss(loadingToast);
       toastNotifications.success.quizCreated();
-      
-      set({ 
-        isCreating: false, 
+
+      set({
+        isCreating: false,
         createdQuizId: response.data.quizId,
-        createError: null 
+        createError: null,
       });
     } catch (error: any) {
       toast.dismiss(loadingToast);
-      
+
       const errorMessage = error.response?.data?.error || 'Failed to create quiz';
       toast.error(errorMessage);
-      
-      set({ 
-        isCreating: false, 
+
+      set({
+        isCreating: false,
         createError: errorMessage,
-        createdQuizId: null 
+        createdQuizId: null,
       });
     }
   },
-  
-  clearCreateState: () => set({ 
-    isCreating: false, 
-    createdQuizId: null, 
-    createError: null 
-  }),
+
+  clearCreateState: () =>
+    set({
+      isCreating: false,
+      createdQuizId: null,
+      createError: null,
+    }),
 }));
