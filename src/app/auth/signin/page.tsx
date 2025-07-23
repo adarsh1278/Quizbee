@@ -2,9 +2,13 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Input } from '@/component/ui/input';
-import { Button } from '@/component/ui/button';
 import { useAuthStore, Role } from '@/store/userAuthStore';
+
+import AuthCard from '@/component/auth/Authcard';
+import AuthHeader from '@/component/auth/AuthHeader';
+import AuthInput from '@/component/auth/AuthInput';
+import AuthButton from '@/component/auth/Authbutton';
+import AuthFooter from '@/component/auth/Authfooter';
 
 export default function SignInPage() {
   const router = useRouter();
@@ -25,13 +29,8 @@ export default function SignInPage() {
 
     try {
       await login(email, password, role);
-
-      if (role === 'STUDENT') {
-        router.push('/student');
-      } else {
-        router.push('/dashboard');
-      }
-    } catch (err: any) {
+      router.push(role === 'STUDENT' ? '/student' : '/dashboard');
+    } catch (err) {
       console.error('Login error:', err);
     }
   };
@@ -41,21 +40,26 @@ export default function SignInPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-100 dark:bg-slate-900 p-4">
-      <div className="w-full max-w-md p-8 bg-white dark:bg-slate-800 shadow-lg rounded-lg space-y-6">
-        <h2 className="text-2xl font-bold text-center text-black dark:text-white">Sign In</h2>
+    <AuthCard>
+      <AuthHeader
+        icon="🔒"
+        title="Sign In"
+        subtitle="Welcome back! Please enter your credentials"
+      />
 
-        <Input
+      <div className="space-y-5">
+        <AuthInput
+          type="email"
           placeholder="Email"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={setEmail}
         />
 
-        <Input
+        <AuthInput
           type="password"
           placeholder="Password"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={setPassword}
         />
 
         <select
@@ -73,14 +77,13 @@ export default function SignInPage() {
           <p className="text-sm text-red-500">{localError || error}</p>
         )}
 
-        <Button
+        <AuthButton
+          label="Sign In"
+          loading={loading}
           onClick={handleSignIn}
-          className="w-full h-10"
-          disabled={loading}
-        >
-          {loading ? 'Signing In...' : 'Sign In'}
-        </Button>
+        />
 
+        {/* Divider */}
         <div className="relative my-4">
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t border-gray-300" />
@@ -90,13 +93,19 @@ export default function SignInPage() {
           </div>
         </div>
 
-        <Button
+        <button
           onClick={handleGoogleLogin}
           className="w-full h-10 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded"
         >
           Sign in with Google
-        </Button>
+        </button>
+
+        <AuthFooter
+          label="Don’t have an account?"
+          linkText="Sign Up"
+          redirectTo="/auth/signup"
+        />
       </div>
-    </div>
+    </AuthCard>
   );
 }
