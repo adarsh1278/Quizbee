@@ -4,39 +4,35 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Input } from '@/component/ui/input';
 import { Button } from '@/component/ui/button';
-import api from '@/lib/axios';
+import { useAuthStore, Role } from '@/store/userAuthStore';
 
 export default function SignInPage() {
   const router = useRouter();
+  const { login, loading, error } = useAuthStore();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState<'STUDENT' | 'TEACHER' | 'ADMIN' | 'SUPERADMIN'>('STUDENT');
-  const [error, setError] = useState('');
+  const [role, setRole] = useState<Role>('STUDENT');
+  const [localError, setLocalError] = useState('');
 
   const handleSignIn = async () => {
-    setError('');
+    setLocalError('');
 
     if (!email || !password) {
-      setError('Email and password are required.');
+      setLocalError('Email and password are required.');
       return;
     }
 
     try {
-      const response = await api.post(`/auth/login?role=${role}`, {
-        email,
-        password,
-      });
+      await login(email, password, role);
 
-      const { user } = response.data;
-
-      if (user.role === 'STUDENT') {
+      if (role === 'STUDENT') {
         router.push('/student');
       } else {
         router.push('/dashboard');
       }
     } catch (err: any) {
-      console.error('Login failed:', err);
-      setError(err.response?.data?.error || 'Login failed');
+      console.error('Login error:', err);
     }
   };
 
@@ -64,7 +60,7 @@ export default function SignInPage() {
 
         <select
           value={role}
-          onChange={(e) => setRole(e.target.value as any)}
+          onChange={(e) => setRole(e.target.value as Role)}
           className="w-full border rounded-md p-2 text-sm text-slate-700 dark:bg-slate-700 dark:text-white"
         >
           <option value="STUDENT">Student</option>
@@ -73,13 +69,18 @@ export default function SignInPage() {
           <option value="SUPERADMIN">Superadmin</option>
         </select>
 
-        {error && <p className="text-sm text-red-500">{error}</p>}
+        {(localError || error) && (
+          <p className="text-sm text-red-500">{localError || error}</p>
+        )}
 
-        <Button onClick={handleSignIn} className="w-full h-10">
-          Sign In
+        <Button
+          onClick={handleSignIn}
+          className="w-full h-10"
+          disabled={loading}
+        >
+          {loading ? 'Signing In...' : 'Sign In'}
         </Button>
 
-        {/* Divider */}
         <div className="relative my-4">
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t border-gray-300" />
@@ -89,7 +90,6 @@ export default function SignInPage() {
           </div>
         </div>
 
-        {/* Google Sign In */}
         <Button
           onClick={handleGoogleLogin}
           className="w-full h-10 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded"

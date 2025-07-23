@@ -6,11 +6,11 @@ import { Card, CardContent } from '@/component/ui/card';
 import { Input } from '@/component/ui/input';
 import { Button } from '@/component/ui/button';
 import { useQuizStore } from '@/store/useQuizStore';
-import api from '@/lib/axios';
-import Router from 'next/router';
+import { useAuthStore, Role } from '@/store/userAuthStore';
+
 export default function SignUpPage() {
   const [step, setStep] = useState<1 | 2>(1);
-  const [selectedRole, setSelectedRole] = useState<'Teacher' | 'student' | null>(null);
+  const [selectedRole, setSelectedRole] = useState<Role | null>(null);
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -21,14 +21,15 @@ export default function SignUpPage() {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   const router = useRouter();
-  const setUsername = useQuizStore((state) => state.setUsername);
+  const { register, loading, error } = useAuthStore();
+  const setUserName = useQuizStore((state) => state.setUsername);
   const setRole = useQuizStore((state) => state.setRole);
 
-  const handleRoleSelect = (role: 'Teacher' | 'student') => {
+  const handleRoleSelect = (role: Role) => {
     setSelectedRole(role);
     setStep(2);
   };
-   
+
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
 
@@ -37,8 +38,9 @@ export default function SignUpPage() {
     if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Email is invalid';
     if (!formData.password) newErrors.password = 'Password is required';
     if (formData.password.length < 6) newErrors.password = 'Password must be at least 6 characters';
-    if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = 'Passwords do not match';
-    if (selectedRole === 'Teacher' && !formData.institution.trim()) {
+    if (formData.password !== formData.confirmPassword)
+      newErrors.confirmPassword = 'Passwords do not match';
+    if (selectedRole === 'TEACHER' && !formData.institution.trim()) {
       newErrors.institution = 'Institution is required for Teachers';
     }
 
@@ -48,37 +50,29 @@ export default function SignUpPage() {
 
   const handleSignUp = async () => {
     if (!validateForm()) return;
+    if (!selectedRole) return;
 
     try {
-      const response = await api.post('auth/register', {
-        name:formData.fullName,
-        email: formData.email,
-        password: formData.password,
-        role: selectedRole?.toUpperCase(),
-      });
-
-      const { user } = response.data;
-
-      setUsername(formData.fullName);
+      await register(formData.fullName, formData.email, formData.password, selectedRole);
+      setUserName(formData.fullName);
       setRole(selectedRole);
 
-      if (selectedRole === 'Teacher') {
+      if (selectedRole === 'TEACHER') {
         router.push('/dashboard');
       } else {
         router.push('/student');
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error('Signup failed:', err);
-      alert(err.response?.data?.error || 'Something went wrong');
     }
   };
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: '' }));
+  const handleInputChange = (field:string ,value: string) =>{
+    setFormData((prev)=>({...prev,[field]:value}))
+    if(errors[field]){
+      setErrors((prev)=>({...prev,[field]:''}))
     }
-  };
+  }
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') handleSignUp();
@@ -91,11 +85,11 @@ export default function SignUpPage() {
           <div className="text-center mb-8">
             <div className="w-12 h-12 bg-slate-900 dark:bg-white rounded-lg mx-auto mb-4 flex items-center justify-center">
               <span className="text-white dark:text-slate-900 font-bold text-lg">
-                {step === 1 ? '✨' : selectedRole === 'student' ? '🎓' : '👨‍🏫'}
+                {step === 1 ? '✨' : selectedRole === 'STUDENT' ? '🎓' : '👨‍🏫'}
               </span>
             </div>
             <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
-              {step === 1 ? 'Get Started' : `Welcome, ${selectedRole}!`}
+              {step === 1 ? 'Get Started' : `Welcome, ${selectedRole?.toLowerCase()}!`}
             </h1>
             <p className="text-slate-600 dark:text-slate-400 text-sm">
               {step === 1 ? 'Choose your role to begin' : 'Complete your profile to continue'}
@@ -107,7 +101,7 @@ export default function SignUpPage() {
               <Button
                 variant="outline"
                 className="w-full py-6"
-                onClick={() => handleRoleSelect('student')}
+                onClick={() => handleRoleSelect('STUDENT')}
               >
                 🎓 Student
               </Button>
@@ -115,7 +109,7 @@ export default function SignUpPage() {
               <Button
                 variant="outline"
                 className="w-full py-6"
-                onClick={() => handleRoleSelect('Teacher')}
+                onClick={() => handleRoleSelect('TEACHER')}
               >
                 👨‍🏫 Teacher
               </Button>
@@ -162,7 +156,7 @@ export default function SignUpPage() {
                 <p className="text-red-500 text-xs">{errors.confirmPassword}</p>
               )}
 
-              {selectedRole === 'Teacher' && (
+              {selectedRole === 'TEACHER' && (
                 <div>
                   <Input
                     placeholder="Institution/Organization"
@@ -171,16 +165,21 @@ export default function SignUpPage() {
                     onKeyPress={handleKeyPress}
                     className={errors.institution ? 'border-red-500' : ''}
                   />
-                  {errors.institution && <p className="text-red-500 text-xs">{errors.institution}</p>}
+                  {errors.institution && (
+                    <p className="text-red-500 text-xs">{errors.institution}</p>
+                  )}
                 </div>
               )}
 
               <Button
                 onClick={handleSignUp}
+                disabled={loading}
                 className="w-full h-12 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-semibold rounded-lg"
               >
-                Create Account
+                {loading ? 'Creating Account...' : 'Create Account'}
               </Button>
+
+              {error && <p className="text-red-500 text-center text-sm">{error}</p>}
 
               <Button
                 variant="ghost"
@@ -192,7 +191,7 @@ export default function SignUpPage() {
                     email: '',
                     password: '',
                     confirmPassword: '',
-                    institution: ''
+                    institution: '',
                   });
                   setErrors({});
                   setSelectedRole(null);
@@ -204,7 +203,12 @@ export default function SignUpPage() {
               <div className="text-center pt-4 border-t">
                 <p className="text-xs">
                   Already have an account?
-                  <button onClick={()=>{router.push('/auth/signin')}} className="hover:underline ml-1 font-medium">Sign In</button>
+                  <button
+                    onClick={() => router.push('/auth/signin')}
+                    className="hover:underline ml-1 font-medium"
+                  >
+                    Sign In
+                  </button>
                 </p>
               </div>
             </div>

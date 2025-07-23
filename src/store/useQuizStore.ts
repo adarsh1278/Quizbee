@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import toast from 'react-hot-toast';
 import { toastNotifications } from '@/lib/toastNotifications';
 import api from '@/lib/axios';
-
+import { Role } from './userAuthStore';
 interface Player {
   id: string;
   name: string;
@@ -39,7 +39,7 @@ interface QuizState {
   players: Player[];
   currentQuestion: Question | null;
   quizStarted: boolean;
-  role: 'student' | 'Teacher' | null;
+  role: Role | null;
   isCreating: boolean;
   createdQuizId: string | null;
   createError: string | null;
@@ -47,7 +47,7 @@ interface QuizState {
   setUsername: (name: string) => void;
   setEmail: (email: string) => void;
   setInstitution: (inst: string) => void;
-  setRole: (role: 'student' | 'Teacher' | null) => void;
+  setRole: (role: Role | null) => void;
   setRoomCode: (code: string) => void;
   setIsHost: (host: boolean) => void;
   incrementScore: () => void;
