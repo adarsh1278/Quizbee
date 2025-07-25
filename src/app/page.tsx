@@ -3,10 +3,11 @@
 import { Button } from '@/component/ui/button';
 import { useRouter } from 'next/navigation';
 import { useQuizStore } from '@/store/useQuizStore';
+import { useEffect } from 'react';
 
 export default function HomePage() {
   const router = useRouter();
-  const username = useQuizStore((state) => state.username);
+  const username = useQuizStore((state) => state);
 
   const handleNavigation = () => {
     if (!username) {
@@ -15,9 +16,12 @@ export default function HomePage() {
       router.push('/dashboard');
     }
   };
+  useEffect(() => {
+    // handleNavigation();
+  }, [username])
 
   return (
-    <main className="min-h-screen bg-white dark:bg-black text-black dark:text-white px-6 py-16">
+    <main className="min-h-screen bg-white dark:bg-black text-black dark:text-white px-6 py-16" onClick={() => { console.log(username) }}>
       <section className="max-w-5xl mx-auto text-center space-y-6">
         <h1 className="text-5xl font-extrabold tracking-tight">
           Welcome to <span className="text-gray-600">ScoreBee 🐝</span>
