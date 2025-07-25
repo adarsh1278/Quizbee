@@ -64,18 +64,18 @@ export const toastNotifications = {
 
   // Custom toast with promise for async operations
   promise: {
-    createQuiz: (promise: Promise<any>) =>
+    createQuiz: (promise: Promise<unknown>) =>
       toast.promise(promise, {
         loading: 'Creating quiz...',
         success: 'Quiz created successfully! 🎉',
-        error: (err) => err?.message || 'Failed to create quiz',
+        error: (err: unknown) => (err instanceof Error ? err.message : 'Failed to create quiz'),
       }),
     
-    submitQuiz: (promise: Promise<any>) =>
+    submitQuiz: (promise: Promise<unknown>) =>
       toast.promise(promise, {
         loading: 'Submitting quiz...',
         success: 'Quiz submitted successfully! ✅',
-        error: (err) => err?.message || 'Failed to submit quiz',
+        error: (err: unknown) => (err instanceof Error ? err.message : 'Failed to submit quiz'),
       }),
   },
 };
