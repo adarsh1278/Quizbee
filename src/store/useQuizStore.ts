@@ -2,7 +2,8 @@ import { create } from 'zustand';
 import toast from 'react-hot-toast';
 import { toastNotifications } from '@/lib/toastNotifications';
 import api from '@/lib/axios';
-import { Role } from './userAuthStore';
+import { Role, useAuthStore } from './userAuthStore';
+import { useWebSocketStore } from './useWebSocketStore';
 
 interface Player {
   id: string;
@@ -303,7 +304,14 @@ export const useQuizStore = create<QuizState>((set , get) => ({
       const response = await api.get(`/redis/cache/${quizId}`);
       console.log('Quiz cached to Redis:', response.data);
       get().updateQuizState(quizId, 'ongoing');
-      toast.success('Quiz cached successfully');
+      const userId = useAuthStore.getState().user?.id;
+         const sendMessage = useWebSocketStore.getState().sendMessage;
+    sendMessage('JOIN_ROOM', {
+      quizId,
+      userId:userId,
+      isHost:true,
+    });
+      toast.success('Quiz room created  successfully now you can start the quiz');
     } catch (error: unknown) {
       const errorMessage = error instanceof Error && 'response' in error 
         ? (error as { response?: { data?: { error?: string } } }).response?.data?.error || 'Failed to cache quiz'
