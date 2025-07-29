@@ -22,6 +22,9 @@ import {
     AlertCircle
 } from 'lucide-react';
 import QuestionList from './questionList';
+import { useWebSocketStore } from '@/store/useWebSocketStore';
+import { WaitingScreen } from '@/app/student/[quizId]/waitingCompenet';
+
 
 
 export default function QuizDetailPage() {
@@ -30,13 +33,13 @@ export default function QuizDetailPage() {
     const quizId = params.quizId as string;
 
     const { user } = useAuthStore();
-    const { selectedQuiz, isLoadingQuiz, quizError, getQuizById, cacheQuizToRedis } = useQuizStore();
-
+    const { selectedQuiz, isLoadingQuiz, quizError, getQuizById, cacheQuizToRedis, } = useQuizStore();
+    const { roomJoined, liveUsers, quizStarted } = useWebSocketStore();
     useEffect(() => {
-        if (quizId) {
+        if (quizId && quizId != selectedQuiz?.id) {
             getQuizById(quizId);
         }
-    }, [quizId, getQuizById]);
+    }, [quizId]);
 
     const handleBackToDashboard = () => {
         router.push('/dashboard');
@@ -46,7 +49,7 @@ export default function QuizDetailPage() {
     }
     const isTeacher = user?.role === 'TEACHER';
 
-    // Convert quiz state to our typed state
+
     const quizState: any = (selectedQuiz?.state) || 'yet_to_start';
 
 
@@ -104,6 +107,12 @@ export default function QuizDetailPage() {
             </div>
         );
     }
+    if (roomJoined) {
+        return (
+            <WaitingScreen
+                liveUsers={liveUsers} quizStarted={quizStarted} isHost={true} />
+        )
+    }
 
 
     return (
@@ -137,8 +146,8 @@ export default function QuizDetailPage() {
                             <div className="space-y-6 pr-2">
 
                                 {isTeacher && selectedQuiz.state === 'yet_to_start' && (
-                                    <button onClick={handleCacheQuiz}>
-                                        Create Room
+                                    <button onClick={handleCacheQuiz} className="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors">
+                                        Enter Quiz Room
                                     </button>
                                 )}
 

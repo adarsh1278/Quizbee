@@ -1,33 +1,29 @@
 import { create } from 'zustand';
 import toast from 'react-hot-toast';
 import { getCookie } from '@/utils/getToken';
+import { useAuthStore } from './userAuthStore';
+import { Question ,LiveUser } from '@/types/globaltypes';
 
-type User = { userId: string; name: string };
-type Question = {
-  question: string;
-  options: string[];
-  marks: number;
- 
-  timeLimit: number;
-};
-type RoomJoined = {
-  [quizId: string]: boolean;
-};
+
 
 interface QuizStore {
   socket: WebSocket | null;
   loading: boolean;
-  users: User[];
+  quizStarted: boolean;
+  liveUsers: Map<string, LiveUser>;
   leaderboard: Record<string, number>;
   currentQuestion: Question | null;
-  roomJoined: RoomJoined;
-  totalmarks:number;
-  rank:0;
+  roomJoined: boolean;
+  totalmarks: number;
+  rank: number;
   connect: () => void;
-  joinRoom: (quizId: string) => void;
+  joinRoom: (quizId: string, isHost?: boolean) => void;
   sendMessage: (type: string, payload: any) => void;
 
-  setUsers: (users: User[]) => void;
+  setLiveUsers: (users: LiveUser[]) => void;
+  addOrUpdateLiveUser: (user: LiveUser) => void;
+  removeLiveUser: (userId: string) => void;
+
   setLeaderboard: (data: Record<string, number>) => void;
   setQuestion: (q: Question) => void;
 }
@@ -35,12 +31,14 @@ interface QuizStore {
 export const useWebSocketStore = create<QuizStore>((set, get) => ({
   socket: null,
   loading: false,
-  users: [],
+  quizStarted: false,
+
+  liveUsers: new Map(),
   leaderboard: {},
   currentQuestion: null,
-  roomJoined: {},
-  totalmarks:0,
-  rank:0,
+  roomJoined: false,
+  totalmarks: 0,
+  rank: 0,
 
   connect: () => {
     set({ loading: true });
@@ -69,33 +67,40 @@ export const useWebSocketStore = create<QuizStore>((set, get) => ({
     ws.onmessage = (event) => {
       const msg = JSON.parse(event.data);
 
-      if (msg.type === 'leaderboard') {
-        set({ leaderboard: msg.data });
-      }
+      switch (msg.type) {
+        case 'leaderboard':
+          set({ leaderboard: msg.data });
+          break;
 
-      if (msg.type === 'question') {
-        set({ currentQuestion: msg.data });
-      }
+        case 'question':
+          set({ currentQuestion: msg.data });
+          break;
 
-      if (msg.type === 'users') {
-        set({ users: msg.data });
-      }
-       if (msg.type === 'rank') {
-        set({ totalmarks: msg.data,
-              rank:msg.rank,
-         });
-      }
+        case 'USERS_IN_ROOM': {
+          const users: LiveUser[] = msg.payload.users;
+          const usersMap = new Map(users.map((user) => [user.id, user]));
+          set({ roomJoined: true, liveUsers: usersMap });
+          break;
+        }
 
-      if (msg.type === 'roomJoined') {
-        set((state) => ({
-          roomJoined: {
-            ...state.roomJoined,
-            [msg.quizId]: true,
-          },
-          loading: false,
-        }));
+        case 'USER_JOINED': {
+          const user: LiveUser = msg.payload.user;
+          get().addOrUpdateLiveUser(user);
+          break;
+        }
 
-        toast.success('Joined quiz room successfully');
+        case 'USER_LEFT': {
+          const userId: string = msg.payload.userId;
+          get().removeLiveUser(userId);
+          break;
+        }
+
+        case 'rank':
+          set({
+            totalmarks: msg.data,
+            rank: msg.rank,
+          });
+          break;
       }
     };
 
@@ -116,16 +121,19 @@ export const useWebSocketStore = create<QuizStore>((set, get) => ({
     };
   },
 
-  joinRoom: (quizId: string) => {
+  joinRoom: (quizId: string, isHost?: boolean) => {
     const { sendMessage } = get();
 
-    
     set({ loading: true });
     const toastId = toast.loading('Joining quiz room...');
 
-    sendMessage('room:join', { quizId });
+    sendMessage('JOIN_ROOM', {
+      quizId,
+      userId: useAuthStore.getState().user?.id || '',
+      isHost: isHost || false,
+    });
 
-    
+    toast.dismiss(toastId);
   },
 
   sendMessage: (type: string, payload: any) => {
@@ -139,7 +147,25 @@ export const useWebSocketStore = create<QuizStore>((set, get) => ({
     }
   },
 
-  setUsers: (users) => set({ users }),
+  setLiveUsers: (users: LiveUser[]) =>
+    set({
+      liveUsers: new Map(users.map((u) => [u.id, u])),
+    }),
+
+  addOrUpdateLiveUser: (user: LiveUser) =>
+    set((state) => {
+      const updated = new Map(state.liveUsers);
+      updated.set(user.id, user);
+      return { liveUsers: updated };
+    }),
+
+  removeLiveUser: (userId: string) =>
+    set((state) => {
+      const updated = new Map(state.liveUsers);
+      updated.delete(userId);
+      return { liveUsers: updated };
+    }),
+
   setLeaderboard: (data) => set({ leaderboard: data }),
   setQuestion: (q) => set({ currentQuestion: q }),
 }));

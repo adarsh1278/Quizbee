@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/component/ui/button';
 import { useWebSocketStore } from '@/store/useWebSocketStore';
+import { useAuthStore } from '@/store/userAuthStore';
 
 type QuizIdModalProps = {
   isOpen: boolean;
@@ -13,6 +14,7 @@ type QuizIdModalProps = {
 export default function QuizIdModal({ isOpen, onClose }: QuizIdModalProps) {
   const [quizId, setQuizId] = useState('');
   const router = useRouter();
+  const { user } = useAuthStore();
   const { sendMessage } = useWebSocketStore((state) => state);
 
 
@@ -21,7 +23,7 @@ export default function QuizIdModal({ isOpen, onClose }: QuizIdModalProps) {
       sendMessage('JOIN_ROOM', {
         quizId: quizId,
         isHost: false,
-        userId: useWebSocketStore.getState().users[0]?.userId, //
+        userId: user?.id,
       })
       setTimeout(() => {
         router.push(`/student/${quizId}`);

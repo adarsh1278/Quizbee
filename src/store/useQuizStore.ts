@@ -29,7 +29,7 @@ interface QuizAttempt {
   // Add other attempt fields as needed
 }
 
-interface Quiz {
+ export interface Quiz {
   id: string;
   title: string;
   slug: string;
@@ -66,7 +66,7 @@ interface CreateQuizResponse {
   quizId: string;
 }
 
-interface QuizState {
+ interface QuizState {
   // User session data
   username: string;
   email: string;
@@ -303,7 +303,7 @@ export const useQuizStore = create<QuizState>((set , get) => ({
     try {
       const response = await api.get(`/redis/cache/${quizId}`);
       console.log('Quiz cached to Redis:', response.data);
-      get().updateQuizState(quizId, 'ongoing');
+      // get().updateQuizState(quizId, 'ongoing');
       const userId = useAuthStore.getState().user?.id;
          const sendMessage = useWebSocketStore.getState().sendMessage;
     sendMessage('JOIN_ROOM', {
