@@ -14,11 +14,12 @@ export interface User {
 // WebSocket User type (different from auth User)
 export interface WebSocketUser { 
     userId: string; 
-    name: string; 
+    score: number;
 }
 
 // Quiz Types
 export interface Question {
+    id?: string;
     question: string;
     options: string[];
     marks: number;
@@ -65,6 +66,17 @@ export interface RankDisplayProps {
 }
 
 export interface LeaderboardProps {
-    leaderboard: LeaderboardData;
+   
     users: WebSocketUser[];
+}
+export type startQuizPayload ={
+   quizId: string;
+}
+
+export interface AnswerPayload {
+  quizId: string;
+  attemptId: string;
+  userId: string;
+  questionId: string;
+  answer: number;
 }

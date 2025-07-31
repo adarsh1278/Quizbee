@@ -2,16 +2,17 @@ import { create } from 'zustand';
 import toast from 'react-hot-toast';
 import { getCookie } from '@/utils/getToken';
 import { useAuthStore } from './userAuthStore';
-import { Question ,LiveUser } from '@/types/globaltypes';
+import { Question ,LiveUser, startQuizPayload, WebSocketUser } from '@/types/globaltypes';
 
 
 
 interface QuizStore {
   socket: WebSocket | null;
   loading: boolean;
+  attemptId?: string;
   quizStarted: boolean;
   liveUsers: Map<string, LiveUser>;
-  leaderboard: Record<string, number>;
+  leaderboard: WebSocketUser[];
   currentQuestion: Question | null;
   roomJoined: boolean;
   totalmarks: number;
@@ -24,7 +25,7 @@ interface QuizStore {
   addOrUpdateLiveUser: (user: LiveUser) => void;
   removeLiveUser: (userId: string) => void;
 
-  setLeaderboard: (data: Record<string, number>) => void;
+  setLeaderboard: (data: WebSocketUser[]) => void;
   setQuestion: (q: Question) => void;
 }
 
@@ -32,9 +33,10 @@ export const useWebSocketStore = create<QuizStore>((set, get) => ({
   socket: null,
   loading: false,
   quizStarted: false,
-
+  attemptId: undefined,
+  
   liveUsers: new Map(),
-  leaderboard: {},
+  leaderboard: [],
   currentQuestion: null,
   roomJoined: false,
   totalmarks: 0,
@@ -66,14 +68,31 @@ export const useWebSocketStore = create<QuizStore>((set, get) => ({
 
     ws.onmessage = (event) => {
       const msg = JSON.parse(event.data);
+      console.log('WebSocket message received:', msg.type , msg?.payload , msg);
 
       switch (msg.type) {
         case 'leaderboard':
           set({ leaderboard: msg.data });
           break;
-
-        case 'question':
-          set({ currentQuestion: msg.data });
+        case "QUIZ_STARTED" :{
+          toast.success('Quiz started ');
+          set({
+            quizStarted: true,
+            attemptId: msg.payload?.attemptId,
+          });
+          break;
+        }
+        case 'QUIZ_ONGOING':{
+          toast.success('Quiz is ongoing ');
+          set({
+            quizStarted: true,
+            attemptId: msg.payload?.attemptId,
+          });
+          break;
+        }
+        case 'NEW_QUESTION':
+          console.log('NEW_QUESTION received:', msg.payload);
+          set({ currentQuestion: msg.payload });
           break;
 
         case 'USERS_IN_ROOM': {
@@ -82,12 +101,18 @@ export const useWebSocketStore = create<QuizStore>((set, get) => ({
           set({ roomJoined: true, liveUsers: usersMap });
           break;
         }
+        case 'NEW_USER':{
+          const newUser: LiveUser = msg.payload.user;
+          get().addOrUpdateLiveUser(newUser);
+          break;
+        }
 
         case 'USER_JOINED': {
           const user: LiveUser = msg.payload.user;
           get().addOrUpdateLiveUser(user);
           break;
         }
+
 
         case 'USER_LEFT': {
           const userId: string = msg.payload.userId;
@@ -136,7 +161,7 @@ export const useWebSocketStore = create<QuizStore>((set, get) => ({
     toast.dismiss(toastId);
   },
 
-  sendMessage: (type: string, payload: any) => {
+  sendMessage: (type: string, payload: startQuizPayload|any) => {
     const socket = get().socket;
 
     if (socket && socket.readyState === WebSocket.OPEN) {

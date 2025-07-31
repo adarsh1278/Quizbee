@@ -34,12 +34,17 @@ export default function QuizDetailPage() {
 
     const { user } = useAuthStore();
     const { selectedQuiz, isLoadingQuiz, quizError, getQuizById, cacheQuizToRedis, } = useQuizStore();
-    const { roomJoined, liveUsers, quizStarted } = useWebSocketStore();
+    const { roomJoined, liveUsers, quizStarted, sendMessage
+
+    } = useWebSocketStore();
     useEffect(() => {
         if (quizId && quizId != selectedQuiz?.id) {
             getQuizById(quizId);
         }
     }, [quizId]);
+    const startQuiz = () => {
+        sendMessage('START_QUIZ', { quizId });
+    }
 
     const handleBackToDashboard = () => {
         router.push('/dashboard');
@@ -110,7 +115,7 @@ export default function QuizDetailPage() {
     if (roomJoined) {
         return (
             <WaitingScreen
-                liveUsers={liveUsers} quizStarted={quizStarted} isHost={true} />
+                liveUsers={liveUsers} quizStarted={quizStarted} isHost={true} start={startQuiz} />
         )
     }
 

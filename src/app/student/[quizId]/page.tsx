@@ -5,7 +5,8 @@
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useWebSocketStore } from "@/store/useWebSocketStore";
-import { Question, LeaderboardData, WebSocketUser } from "@/types/globaltypes";
+import { Question, LeaderboardData, WebSocketUser, AnswerPayload } from "@/types/globaltypes";
+import { useAuthStore } from "@/store/userAuthStore";
 import LoadingSpinner from "@/component/ui/loading-spinner";
 
 // Import separated components
@@ -15,7 +16,8 @@ import {
     RankDisplay as QuizRankDisplay,
     Leaderboard as QuizLeaderboard
 } from "@/component/quiz";
-import WaitingScreen from "./waitingCompenet";
+import { WaitingScreen } from "./waitingCompenet";
+
 
 
 export default function StudentQuizPage() {
@@ -34,10 +36,14 @@ export default function StudentQuizPage() {
         roomJoined,
         totalmarks,
         rank,
+        attemptId,
         connect,
         joinRoom,
         sendMessage,
     } = useWebSocketStore();
+
+    // Auth store for user ID
+    const { user } = useAuthStore();
 
     // Local component state
     const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
@@ -60,32 +66,41 @@ export default function StudentQuizPage() {
 
     useEffect(() => {
         if (currentQuestion) {
+            // Reset answer state for new question
+            console.log('New question received:', currentQuestion);
             setSelectedAnswer(null);
             setIsAnswered(false);
         }
-    }, [currentQuestion]);
+    }, [currentQuestion?.id, currentQuestion?.question]); // Reset when question changes
 
 
     const handleAnswerSelect = (optionIndex: number) => {
-        if (isAnswered) return;
+        if (isAnswered || !currentQuestion || !attemptId || !user?.id) return;
 
         setSelectedAnswer(optionIndex);
         setIsAnswered(true);
 
-
-        sendMessage('answer', {
+        // Send answer with proper payload structure
+        sendMessage('ANSWER', {
             quizId,
-            answerIndex: optionIndex,
-            questionId: currentQuestion?.question // Using question text as ID
+            attemptId,
+            userId: user.id,
+            questionId: currentQuestion.id || currentQuestion.question, // Use question ID if available, fallback to question text
+            answer: optionIndex
         });
     };
 
 
     const handleTimeUp = () => {
-        if (!isAnswered) {
+        if (!isAnswered && currentQuestion && attemptId && user?.id) {
             setIsAnswered(true);
-            // Send timeout message to server
-            sendMessage('timeout', { quizId });
+            // Send timeout message to server with proper payload
+            sendMessage('timeout', {
+                quizId,
+                attemptId,
+                userId: user.id,
+                questionId: currentQuestion.id || currentQuestion.question
+            });
         }
     };
 
@@ -125,9 +140,7 @@ export default function StudentQuizPage() {
                             <h1 className="text-2xl font-bold text-gray-800">
                                 Quiz Room: {quizId}
                             </h1>
-                            <p className="text-gray-600 mt-1">
-                                🟢 {users.length} participant{users.length !== 1 ? 's' : ''} online
-                            </p>
+
                         </div>
 
                         {/* Quick Stats */}
@@ -144,11 +157,13 @@ export default function StudentQuizPage() {
                 <div className="hidden lg:grid lg:grid-cols-4 lg:gap-6">
                     {/* Left Column - Question, Timer, and Rank */}
                     <div className="lg:col-span-3 space-y-6">
-                        {/* Timer */}
-                        <QuizTimer
-                            timeLimit={currentQuestion.timeLimit * 60} // Convert minutes to seconds
-                            onTimeUp={handleTimeUp}
-                        />
+                        {/* Timer - only show when there's a current question */}
+                        {currentQuestion && (
+                            <QuizTimer
+                                timeLimit={(currentQuestion.timeLimit || 1) * 60} // Convert minutes to seconds
+                                onTimeUp={handleTimeUp}
+                            />
+                        )}
 
 
                         {isAnswered && (
@@ -159,30 +174,34 @@ export default function StudentQuizPage() {
                         )}
 
 
-                        <QuizQuestionCard
-                            question={currentQuestion}
-                            onAnswerSelect={handleAnswerSelect}
-                            selectedAnswer={selectedAnswer}
-                            isAnswered={isAnswered}
-                        />
+                        {currentQuestion && (
+                            <QuizQuestionCard
+                                question={currentQuestion}
+                                onAnswerSelect={handleAnswerSelect}
+                                selectedAnswer={selectedAnswer}
+                                isAnswered={isAnswered}
+                            />
+                        )}
                     </div>
 
 
                     <div className="lg:col-span-1">
                         <QuizLeaderboard
-                            leaderboard={leaderboard}
-                            users={users}
+
+                            users={leaderboard}
                         />
                     </div>
                 </div>
 
 
                 <div className="lg:hidden space-y-6">
-
-                    <QuizTimer
-                        timeLimit={currentQuestion.timeLimit * 60} // Convert minutes to seconds
-                        onTimeUp={handleTimeUp}
-                    />
+                    {/* Timer - only show when there's a current question */}
+                    {currentQuestion && (
+                        <QuizTimer
+                            timeLimit={(currentQuestion.timeLimit || 1) * 60} // Convert minutes to seconds
+                            onTimeUp={handleTimeUp}
+                        />
+                    )}
 
 
                     {isAnswered && (
@@ -192,18 +211,20 @@ export default function StudentQuizPage() {
                         />
                     )}
 
+                    {
+                        currentQuestion && (<QuizQuestionCard
+                            question={currentQuestion}
+                            onAnswerSelect={handleAnswerSelect}
+                            selectedAnswer={selectedAnswer}
+                            isAnswered={isAnswered}
+                        />
+                        )
 
-                    <QuizQuestionCard
-                        question={currentQuestion}
-                        onAnswerSelect={handleAnswerSelect}
-                        selectedAnswer={selectedAnswer}
-                        isAnswered={isAnswered}
-                    />
-
+                    }
 
                     <QuizLeaderboard
-                        leaderboard={leaderboard}
-                        users={users}
+
+                        users={leaderboard}
                     />
                 </div>
             </div>
