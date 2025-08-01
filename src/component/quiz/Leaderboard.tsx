@@ -2,11 +2,14 @@
 
 import { LeaderboardProps } from "@/types/globaltypes";
 import { useWebSocketStore } from "@/store/useWebSocketStore";
+import { useEffect } from "react";
 
 export default function Leaderboard({ users }: LeaderboardProps) {
     const { liveUsers } = useWebSocketStore();
 
-
+    useEffect(() => {
+        console.log("Live Users in Leaderboard:", liveUsers, users);
+    }, [users, liveUsers]);
 
     // Get user details from liveUsers (Map)
     const getUserDetails = (userId: string) => {
@@ -34,11 +37,11 @@ export default function Leaderboard({ users }: LeaderboardProps) {
             {/* Leaderboard Entries */}
             <div className="space-y-3 max-h-96 overflow-y-auto">
                 {users.map((user, index) => {
-                    const userDetails = getUserDetails(user.userId);
+                    const userDetails = getUserDetails(user.value);
 
                     return (
                         <div
-                            key={user.userId}
+                            key={user.value}
                             className="bg-white border border-gray-200 rounded-lg p-4 transition-all duration-200 hover:shadow-md"
                         >
                             <div className="flex items-center justify-between">
@@ -80,7 +83,8 @@ export default function Leaderboard({ users }: LeaderboardProps) {
                                 {/* Right side - Score */}
                                 <div className="text-right ml-3">
                                     <div className="text-lg font-bold text-blue-600">
-                                        {user.score || 0}
+                                        {Math.round((user?.score || 0) * 100) / 100}
+
                                     </div>
                                     <div className="text-xs text-gray-500">
                                         points

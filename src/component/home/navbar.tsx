@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/userAuthStore';
 import LoadingSpinner from '@/component/ui/loading-spinner';
+import { ModeToggle } from '@/components/ui/themeToggle';
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -120,6 +121,7 @@ export default function Navbar() {
                 </svg>
               </button>
 
+
               {isDropdownOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-50 border border-gray-200 dark:border-gray-700">
                   <div className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
@@ -158,6 +160,7 @@ export default function Navbar() {
               </Link>
             </div>
           )}
+          <ModeToggle />
         </nav>
 
         {/* Mobile Menu Button */}

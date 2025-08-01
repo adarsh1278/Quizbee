@@ -6,6 +6,7 @@ import Navbar from "../component/home/navbar";
 import Footer from "../component/home/footer";
 import AuthProvider from "../component/auth/AuthProvider";
 import Connect from "@/component/auth/connectSocket";
+import { ThemeProvider } from "@/components/ui/themeProvider";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -36,7 +37,14 @@ export default function RootLayout({
           <Navbar />
           <div className=" w-full  h-[50px]"></div>
           <Connect />
-          {children}
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            {children}
+          </ThemeProvider>
           <Footer />
         </AuthProvider>
         <Toaster

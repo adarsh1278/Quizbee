@@ -71,8 +71,9 @@ export const useWebSocketStore = create<QuizStore>((set, get) => ({
       console.log('WebSocket message received:', msg.type , msg?.payload , msg);
 
       switch (msg.type) {
-        case 'leaderboard':
-          set({ leaderboard: msg.data });
+        case 'Leaderboard':
+          set({ leaderboard: msg.payload.topPlayers ,totalmarks: Math.round(msg.payload.selfScore?.score||0) });
+          set({rank:msg.payload.selfScore?.rank||-1 })
           break;
         case "QUIZ_STARTED" :{
           toast.success('Quiz started ');
@@ -167,6 +168,7 @@ export const useWebSocketStore = create<QuizStore>((set, get) => ({
     if (socket && socket.readyState === WebSocket.OPEN) {
       const message = { type, payload };
       socket.send(JSON.stringify(message));
+      toast.success(`Message sent: ${type}`)
     } else {
       toast.error('WebSocket is not connected');
     }

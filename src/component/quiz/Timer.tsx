@@ -3,14 +3,16 @@
 
 import { useState, useEffect } from "react";
 import { TimerProps } from "@/types/globaltypes";
+import { useWebSocketStore } from "@/store/useWebSocketStore";
 
-export default function Timer({ timeLimit, onTimeUp }: TimerProps) {
+export default function Timer({ timeLimit, onTimeUp, disabled }: TimerProps) {
     const [timeLeft, setTimeLeft] = useState(timeLimit);
+    const { currentQuestion } = useWebSocketStore();
 
     useEffect(() => {
 
         setTimeLeft(timeLimit);
-    }, [timeLimit]);
+    }, [timeLimit, currentQuestion]);
 
     useEffect(() => {
 
@@ -67,6 +69,10 @@ export default function Timer({ timeLimit, onTimeUp }: TimerProps) {
 
             {/* Time Status Text */}
             <div className="mt-2 text-center">
+                {timeLeft <= 0 && (
+                    <span className="text-red-600 font-bold">
+                        Times up
+                    </span>)}
                 {timeLeft <= 10 && (
                     <span className="text-sm text-red-600 font-medium animate-pulse">
                         ⚠️ Time almost up!

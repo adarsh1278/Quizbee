@@ -8,7 +8,8 @@ export default function QuestionCard({
     question,
     onAnswerSelect,
     selectedAnswer,
-    isAnswered
+    isAnswered,
+    disabled
 }: QuestionProps) {
     return (
         <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
@@ -34,7 +35,7 @@ export default function QuestionCard({
                         <button
                             key={index}
                             onClick={() => !isAnswered && onAnswerSelect(index)}
-                            disabled={isAnswered}
+                            // disabled={isAnswered}
                             className={`w-full p-4 text-left rounded-lg border-2 transition-all duration-200 group ${selectedAnswer === index
                                 ? "border-blue-500 bg-blue-50 text-blue-800 shadow-md"
                                 : isAnswered
@@ -88,12 +89,22 @@ export default function QuestionCard({
                 </div>
             )}
 
-            {!isAnswered && (
+            {!isAnswered && !disabled && (
                 <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                     <div className="flex items-center text-blue-800">
                         <span className="mr-2">💡</span>
                         <span className="text-sm">
                             Select an option above to submit your answer
+                        </span>
+                    </div>
+                </div>
+            )}
+            {disabled && !isAnswered && (
+                <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                    <div className="flex items-center text-red-800">
+                        <span className="mr-2">⏰</span>
+                        <span className="text-sm">
+                            Time is up! You cannot select an answer now.
                         </span>
                     </div>
                 </div>

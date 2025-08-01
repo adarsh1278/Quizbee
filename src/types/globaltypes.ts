@@ -13,7 +13,7 @@ export interface User {
 
 // WebSocket User type (different from auth User)
 export interface WebSocketUser { 
-    userId: string; 
+    value: string; 
     score: number;
 }
 
@@ -51,6 +51,7 @@ export interface LoadingSpinnerProps {
 export interface TimerProps {
     timeLimit: number;
     onTimeUp: () => void;
+    disabled?: boolean; // Optional prop to disable timer
 }
 
 export interface QuestionProps {
@@ -58,6 +59,7 @@ export interface QuestionProps {
     onAnswerSelect: (optionIndex: number) => void;
     selectedAnswer: number | null;
     isAnswered: boolean;
+    disabled?: boolean; // Optional prop to disable interaction
 }
 
 export interface RankDisplayProps {

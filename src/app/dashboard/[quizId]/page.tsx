@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { use, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useQuizStore } from '@/store/useQuizStore';
 import { useAuthStore } from '@/store/userAuthStore';
@@ -24,6 +24,9 @@ import {
 import QuestionList from './questionList';
 import { useWebSocketStore } from '@/store/useWebSocketStore';
 import { WaitingScreen } from '@/app/student/[quizId]/waitingCompenet';
+import { Leaderboard } from '@/component/quiz';
+import toast from 'react-hot-toast';
+import { Socket } from 'dgram';
 
 
 
@@ -34,7 +37,7 @@ export default function QuizDetailPage() {
 
     const { user } = useAuthStore();
     const { selectedQuiz, isLoadingQuiz, quizError, getQuizById, cacheQuizToRedis, } = useQuizStore();
-    const { roomJoined, liveUsers, quizStarted, sendMessage
+    const { roomJoined, liveUsers, quizStarted, sendMessage, leaderboard, socket
 
     } = useWebSocketStore();
     useEffect(() => {
@@ -46,6 +49,7 @@ export default function QuizDetailPage() {
         sendMessage('START_QUIZ', { quizId });
     }
 
+
     const handleBackToDashboard = () => {
         router.push('/dashboard');
     };
@@ -56,7 +60,12 @@ export default function QuizDetailPage() {
 
 
     const quizState: any = (selectedQuiz?.state) || 'yet_to_start';
+    useEffect(() => {
+        if (quizState === 'ongoing') {
+            cacheQuizToRedis(quizId);
+        }
 
+    }, [quizState, socket])
 
     if (isLoadingQuiz) {
         return (
@@ -108,7 +117,7 @@ export default function QuizDetailPage() {
     if (quizState === 'ongoing') {
         return (
             <div>
-                Adarsh
+                <Leaderboard users={leaderboard} />
             </div>
         );
     }
