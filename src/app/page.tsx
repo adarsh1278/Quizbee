@@ -17,7 +17,7 @@ export default function HomePage() {
     }
   };
   useEffect(() => {
-    // handleNavigation();
+     handleNavigation();
   }, [username])
 
   return (
